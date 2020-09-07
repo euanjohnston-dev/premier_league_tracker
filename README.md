@@ -10,6 +10,6 @@ The project was created to track the progress of selections made by my family fo
 - Email sending
 - Pandas dataframe
 
-##### required packages
+##### Required packages
 
 Please see the requirements.txt file
