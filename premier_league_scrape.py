@@ -1,3 +1,4 @@
+#!/home/user/anaconda/bin/python
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -41,19 +42,21 @@ def scrape():
 
     for data in soup1.find_all('td', class_='team'):
         for a in data.find_all('span', class_='long'):
-            teams.append(a.text)
+            if len(teams) < 20:
+                teams.append(a.text)
+
 
     for data_1 in soup1.find_all('td', class_='points'):
-            points.append(int(data_1.text))
+            if len(points) < 20:
+                points.append(int(data_1.text))
 
     dictionary = dict(zip(teams, points))
 
     return dictionary
 
-def create_comined_league_table():
+def create_combined_league_table():
     d1 = chosen_teams()
     d2 = scrape()
-
     ds = [d1, d2]
     d = {}
     for k in d1.keys():
@@ -61,16 +64,18 @@ def create_comined_league_table():
 
     combined_points_table = pd.DataFrame.from_dict(d, orient='index',
                            columns=['Player', 'Points'])
+
     combined_points_table.sort_values(by=['Points'])
-
     combined_points_table.index.name = 'Team'
-
     return combined_points_table
 
 def create_player_standings():
-    combined_league_table = create_comined_league_table()
+    combined_league_table = create_combined_league_table()
 
     current_standings = combined_league_table.groupby(['Player'], as_index=False)['Points'].sum()
+    current_standings = current_standings.sort_values(by=['Points'], ascending=False)
+
+    print(current_standings)
     return current_standings
 
 
@@ -79,7 +84,7 @@ def send_mail(body):
     message = MIMEMultipart()
     message['Subject'] = 'Boys_PL_Standings'
     message['From'] = 'euanjohnston92@gmail.com'
-    message['To'] = 'euanjohnston92@gmail.com'
+    message['To'] = 'euanjohnston92@gmail.com, alasdairnjohnston@gmail.com, finlayjamesjohnston@gmail.com, jimidj@icloud.com'
 
     body_content = body
     message.attach(MIMEText(body_content, "html"))
@@ -91,6 +96,7 @@ def send_mail(body):
     server.sendmail(message['From'], message['To'], msg_body)
     server.quit()
 
+
 def send_PL_update():
     df = create_player_standings()
     output = build_table(df, 'red_light',font_size = 'large', font_family = 'Times new Roman', text_align = 'left')
@@ -98,3 +104,4 @@ def send_PL_update():
 
 
 send_PL_update()
+
